@@ -1,11 +1,14 @@
 {
-  "rewrites": [
+  "redirects": [
     {
       "source": "/i3.html",
-      "destination": "/i3.html"
-    },
+      "destination": "/i3.html",
+      "statusCode": 200
+    }
+  ],
+  "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/((?!i3\\.html).*)",
       "destination": "/index.html"
     }
   ]
