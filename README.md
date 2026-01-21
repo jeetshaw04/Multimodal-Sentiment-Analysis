@@ -4,10 +4,6 @@
 
 **URL**: https://sentiment-dusky-ten.vercel.app/
 
-## How can I edit this code?
-
-There are several ways of editing your application.
-
 
 The only requirement is having Node.js & npm installed - [install with nvm]
 - 
@@ -21,3 +17,5 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
+
+# Made by Jeet Shaw 
