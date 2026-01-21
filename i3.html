@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Jeet Shaw, Amit Kumar">
+    <title>IndiSense - Sentiment Analysis</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@400;500&family=Material+Icons+Outlined&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-color: #000000;
+            --card-bg: rgba(30, 31, 32, 0.6);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --text-primary: #ffffff;
+            --text-secondary: #9aa0a6;
+            --accent-gradient: linear-gradient(90deg, #4285f4, #9b72cb, #d96570);
+            --btn-color: #e8eaed;
+            --btn-text: #202124;
+            --insta-gradient: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: 'Google Sans', sans-serif;
+            overflow: hidden;
+        }
+
+        /* --- 3D CANVAS --- */
+        #canvas-container {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            background: radial-gradient(circle at center, rgba(0,0,0,0.4) 0%, #000 100%);
+        }
+
+        /* --- UI LAYER --- */
+        #ui-layer {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 10;
+            pointer-events: none;
+            display: flex; flex-direction: column;
+            overflow-y: auto; /* Scrollable content */
+            scroll-behavior: smooth;
+        }
+
+        /* Enable clicks for interactive elements */
+        header, .hero-section, .control-deck, footer { pointer-events: auto; }
+
+        /* HEADER */
+        header {
+            padding: 20px 24px;
+            display: flex; justify-content: space-between; align-items: center;
+            flex-shrink: 0;
+        }
+        .brand {
+            font-size: 1.25rem;
+            color: var(--text-primary);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .hamburger { color: var(--text-primary); cursor: pointer; }
+        .user-icon { 
+            width: 32px; height: 32px; border-radius: 50%; 
+            background: #5f6368; display: flex; align-items: center; justify-content: center;
+            font-size: 0.8rem;
+        }
+
+        /* HERO SECTION */
+        .hero-section {
+            flex: 1; /* Pushes footer down */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 60px 20px;
+            min-height: 80vh;
+        }
+
+        .hero-title {
+            font-size: 4rem; line-height: 1.1; margin-bottom: 24px; letter-spacing: -1px;
+        }
+
+        .gradient-text {
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: block;
+        }
+
+        .hero-subtitle {
+            font-family: 'Roboto', sans-serif; font-size: 1.1rem;
+            color: var(--text-secondary); max-width: 600px;
+            line-height: 1.6; margin-bottom: 40px;
+        }
+
+        .cta-btn {
+            background-color: var(--btn-color); color: var(--btn-text);
+            padding: 12px 32px; border-radius: 100px;
+            font-family: 'Google Sans', sans-serif; font-weight: 500;
+            text-decoration: none; transition: transform 0.2s, box-shadow 0.2s;
+            margin-bottom: 60px;
+        }
+        .cta-btn:hover { transform: scale(1.05); box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1); }
+
+        /* FEATURE GRID */
+        .feature-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 16px; width: 100%; max-width: 900px;
+        }
+
+        .feature-card {
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            border-radius: 16px; padding: 24px;
+            text-decoration: none; color: var(--text-primary);
+            transition: background 0.2s, transform 0.2s;
+            display: flex; flex-direction: column; gap: 12px;
+            backdrop-filter: blur(10px);
+        }
+        .feature-card:hover { background: rgba(255, 255, 255, 0.1); transform: translateY(-2px); }
+
+        .card-icon-box {
+            width: 48px; height: 48px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 8px;
+        }
+        .icon-video { background: rgba(234, 67, 53, 0.2); color: #ea4335; }
+        .icon-text { background: rgba(66, 133, 244, 0.2); color: #4285f4; }
+        .icon-audio { background: rgba(251, 188, 4, 0.2); color: #fbbc04; }
+        .card-title { font-size: 1.1rem; font-weight: 500; }
+        .card-desc { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.4; }
+
+        /* --- FOOTER SECTION --- */
+        footer {
+            width: 100%;
+            background: linear-gradient(0deg, #000 0%, rgba(0,0,0,0.8) 100%);
+            padding: 60px 20px 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 40px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            margin-top: 40px;
+            backdrop-filter: blur(20px);
+        }
+
+        /* Privacy Badge */
+        .privacy-badge {
+            display: flex; align-items: center; gap: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px 24px; border-radius: 50px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .privacy-icon { color: #81c995; font-size: 1.2rem; }
+        .privacy-text { font-size: 0.9rem; color: #e8eaed; letter-spacing: 0.5px; }
+
+        /* Team Section */
+        .team-section { text-align: center; width: 100%; max-width: 800px; }
+        .team-label {
+            font-family: 'Roboto', sans-serif;
+            font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1.5px;
+            color: var(--text-secondary); margin-bottom: 8px;
+        }
+        .college-name {
+            font-size: 1.1rem; font-weight: 500; color: #fff;
+            margin-bottom: 30px;
+        }
+
+        .team-grid {
+            display: flex; justify-content: center; flex-wrap: wrap; gap: 20px;
+        }
+
+        .member-card {
+            display: flex; align-items: center; gap: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 8px 16px; border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        .member-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .member-name { font-size: 0.95rem; color: #e8eaed; }
+        
+        .insta-icon {
+            width: 24px; height: 24px;
+            background: var(--insta-gradient);
+            border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .insta-svg { width: 16px; height: 16px; fill: white; }
+
+        /* CONTROLS (Hidden visually but kept for functionality if needed) */
+        .control-deck {
+            position: fixed; bottom: 20px; left: 20px;
+            background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px;
+            z-index: 100; opacity: 0.3; transition: opacity 0.3s;
+        }
+        .control-deck:hover { opacity: 1; }
+
+        /* Loader */
+        #loader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 200; display: flex; justify-content: center; align-items: center;
+            color: #4285f4; font-family: 'Google Sans'; font-size: 1.2rem;
+            transition: opacity 0.5s;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-title { font-size: 2.5rem; }
+            .feature-grid { grid-template-columns: 1fr; }
+            .team-grid { flex-direction: column; align-items: center; }
+            .member-card { width: 100%; justify-content: center; }
+        }
+    </style>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.169.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.169.0/examples/jsm/"
+            }
+        }
+    </script>
+</head>
+<body>
+
+    <div id="loader">Initializing Neural Environment...</div>
+
+    <div id="canvas-container"></div>
+
+    <div id="ui-layer">
+        
+        <header>
+            <div class="brand">
+                <span class="material-icons-outlined hamburger">menu</span>
+                <span style="font-weight: 500;">IndiSense</span>
+            </div>
+            <div class="user-icon">U</div>
+        </header>
+
+        <div class="hero-section">
+            <h1 class="hero-title">
+                Sentiment
+                <span class="gradient-text">Analysis</span>
+            </h1>
+            
+            <p class="hero-subtitle">
+                Your AI-powered research partner, grounded in the emotion you trust. 
+                Built with the latest IndiSense models.
+            </p>
+
+            <a href="http://localhost:8080/" class="cta-btn">Try IndiSense</a>
+
+            <div class="feature-grid">
+                <a href="#" class="feature-card" onclick="alert('Redirecting to Video Analysis...')">
+                    <div class="card-icon-box icon-video">
+                        <span class="material-icons-outlined">videocam</span>
+                    </div>
+                    <div class="card-title">Video Sentiment</div>
+                    <div class="card-desc">Analyze facial cues and visual context from video sources.</div>
+                </a>
+
+                <a href="#" class="feature-card" onclick="alert('Redirecting to Text Analysis...')">
+                    <div class="card-icon-box icon-text">
+                        <span class="material-icons-outlined">article</span>
+                    </div>
+                    <div class="card-title">Text Sentiment</div>
+                    <div class="card-desc">Process documents and chat logs for emotional tone.</div>
+                </a>
+
+                <a href="#" class="feature-card" onclick="alert('Redirecting to Audio Analysis...')">
+                    <div class="card-icon-box icon-audio">
+                        <span class="material-icons-outlined">mic</span>
+                    </div>
+                    <div class="card-title">Audio Sentiment</div>
+                    <div class="card-desc">Detect voice inflection and stress in audio recordings.</div>
+                </a>
+            </div>
+        </div>
+
+        <footer>
+            <div class="privacy-badge">
+                <span class="material-icons-outlined privacy-icon">verified_user</span>
+                <span class="privacy-text">Your data is processed securely & privately.</span>
+            </div>
+
+            <div class="team-section">
+                <div class="team-label">DEVELOPED BY STUDENTS OF</div>
+                <div class="college-name">B. P. Poddar Institute of Management & Technology (CSE Branch)</div>
+                
+                <div class="team-grid">
+                    <a href="https://www.instagram.com/jeetshaw04/" target="_blank" class="member-card">
+                        <div class="insta-icon">
+                            <svg class="insta-svg" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                        </div>
+                        <span class="member-name">Jeet Shaw</span>
+                    </a>
+
+                    <a href="https://www.instagram.com/its_mohit_kg/" target="_blank" class="member-card">
+                        <div class="insta-icon">
+                            <svg class="insta-svg" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                        </div>
+                        <span class="member-name">Mohit K. Gupta</span>
+                    </a>
+
+                    <a href="https://www.instagram.com/kr_shomit.io_/" target="_blank" class="member-card">
+                        <div class="insta-icon">
+                            <svg class="insta-svg" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                        </div>
+                        <span class="member-name">Amit Kumar</span>
+                    </a>
+
+                    <a href="#" class="member-card">
+                        <div class="insta-icon">
+                            <svg class="insta-svg" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                        </div>
+                        <span class="member-name">Kiran Chakrabarti</span>
+                    </a>
+                </div>
+                <div style="margin-top:12px;color:var(--text-secondary);font-size:0.9rem;">
+                    Made by Jeet Shaw and Amit Kumar
+                </div>
+            </div>
+        </footer>
+
+        <div class="control-deck">
+            <input type="range" id="exposure" min="0" max="2" step="0.01" value="0.8">
+        </div>
+
+    </div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+
+        const params = { metalness: 0.9, roughness: 0.2, exposure: 0.8 };
+        let camera, scene, renderer, controls, mesh;
+
+        init();
+        animate();
+
+        function init() {
+            const container = document.getElementById( 'canvas-container' );
+
+            renderer = new THREE.WebGLRenderer( { antialias: true, alpha: true } );
+            renderer.setPixelRatio( window.devicePixelRatio );
+            renderer.setSize( window.innerWidth, window.innerHeight );
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = params.exposure;
+            container.appendChild( renderer.domElement );
+
+            scene = new THREE.Scene();
+
+            camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 0.1, 100 );
+            camera.position.set( 0, 0, 8 );
+
+            const geometry = new THREE.TorusKnotGeometry( 1.5, 0.4, 150, 20 );
+            const material = new THREE.MeshStandardMaterial( { 
+                roughness: params.roughness, metalness: params.metalness, color: 0xffffff
+            });
+            mesh = new THREE.Mesh( geometry, material );
+            scene.add( mesh );
+
+            new RGBELoader().load( 'https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/royal_esplanade_1k.hdr', function ( texture ) {
+                texture.mapping = THREE.EquirectangularReflectionMapping;
+                scene.environment = texture;
+                document.getElementById('loader').style.opacity = '0';
+                setTimeout(() => document.getElementById('loader').style.display = 'none', 500);
+            });
+
+            controls = new OrbitControls( camera, renderer.domElement );
+            controls.enableDamping = true;
+            controls.enableZoom = false;
+            controls.autoRotate = true;
+            controls.autoRotateSpeed = 0.5;
+
+            document.getElementById('exposure').addEventListener('input', (e) => {
+                renderer.toneMappingExposure = parseFloat(e.target.value);
+            });
+
+            window.addEventListener( 'resize', onWindowResize );
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize( window.innerWidth, window.innerHeight );
+        }
+
+        function animate() {
+            requestAnimationFrame( animate );
+            controls.update();
+            renderer.render( scene, camera );
+        }
+    </script>
+</body>
+</html>
