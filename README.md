@@ -18,4 +18,3 @@ This project is built with:
 - Tailwind CSS
 
 
-## Made by Jeet Shaw 
