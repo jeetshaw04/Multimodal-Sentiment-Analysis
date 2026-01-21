@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/i3.html",
+      "destination": "/i3.html"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
