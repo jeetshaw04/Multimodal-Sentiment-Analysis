@@ -1,0 +1,165 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@layer base {
+  :root {
+    --background: 222 47% 6%;
+    --foreground: 210 40% 98%;
+
+    --card: 222 47% 8%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 47% 8%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 180 100% 50%;
+    --primary-foreground: 222 47% 6%;
+
+    --secondary: 270 80% 60%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 222 30% 15%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 280 60% 50%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 222 30% 18%;
+    --input: 222 30% 12%;
+    --ring: 180 100% 50%;
+
+    --radius: 0.75rem;
+
+    /* Custom IndiSense colors */
+    --indisense-purple: 270 80% 60%;
+    --indisense-cyan: 180 100% 50%;
+    --indisense-pink: 320 80% 60%;
+    --indisense-teal: 175 70% 40%;
+    --indisense-dark: 222 47% 6%;
+    --indisense-card: 222 47% 10%;
+
+    /* Emotion colors */
+    --emotion-happy: 142 70% 45%;
+    --emotion-sad: 210 70% 50%;
+    --emotion-anger: 0 70% 50%;
+    --emotion-fear: 270 60% 50%;
+    --emotion-surprise: 45 90% 55%;
+    --emotion-neutral: 220 15% 50%;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--indisense-purple)) 0%, hsl(var(--indisense-cyan)) 100%);
+    --gradient-button: linear-gradient(90deg, hsl(270 80% 55%) 0%, hsl(220 80% 55%) 50%, hsl(180 100% 45%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(222 47% 12%) 0%, hsl(222 47% 8%) 100%);
+  }
+
+  .dark {
+    --background: 222 47% 6%;
+    --foreground: 210 40% 98%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+@layer components {
+  .gradient-text {
+    @apply bg-clip-text text-transparent;
+    background-image: var(--gradient-primary);
+  }
+
+  .gradient-button {
+    background: var(--gradient-button);
+    @apply transition-all duration-300 hover:opacity-90 hover:scale-[1.02];
+  }
+
+  .glass-card {
+    @apply bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl;
+  }
+
+  .upload-zone {
+    @apply border-2 border-dashed border-border/60 rounded-xl bg-muted/20 
+           hover:border-primary/50 hover:bg-muted/30 transition-all duration-300 cursor-pointer;
+  }
+
+  .tab-button {
+    @apply px-6 py-2.5 rounded-full font-medium transition-all duration-300;
+  }
+
+  .tab-button-active {
+    background: var(--gradient-button);
+    @apply text-white shadow-lg;
+  }
+
+  .tab-button-inactive {
+    @apply bg-transparent text-muted-foreground hover:text-foreground;
+  }
+
+  .emotion-bar {
+    @apply h-2 rounded-full transition-all duration-500;
+  }
+
+  .starfield {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: -1;
+  }
+}
+
+@layer utilities {
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 3s ease-in-out infinite;
+  }
+
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes glow {
+  from { box-shadow: 0 0 20px hsl(var(--primary) / 0.3); }
+  to { box-shadow: 0 0 30px hsl(var(--primary) / 0.5); }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground));
+}
