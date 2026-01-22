@@ -1,4 +1,4 @@
-# 📊 Multimodal Sentiment Analysis
+#  Multimodal Sentiment Analysis
 
 A web application for sentiment analysis using multiple data modalities.  
 This project integrates frontend UI, Node.js backend logic, and Supabase for database/authentication.
@@ -7,7 +7,7 @@ This project integrates frontend UI, Node.js backend logic, and Supabase for dat
 
 ---
 
-## 🧠 Overview
+##  Overview
 
 Multimodal Sentiment Analysis allows users to analyze sentiments using different data inputs such as text, image, audio, or video (depending on your supported features).  
 This project demonstrates how to combine modern web UI with backend machine learning APIs and cloud database services.
@@ -79,8 +79,7 @@ Now open:
 
 http://localhost:3000
 
-
----
+If the app runs on a different port, check the terminal output for the correct URL.
 
 🚀 Deployment
 
@@ -149,13 +148,6 @@ git commit -m "Add your feature"
 
 ---
 
-📜 License
-
-Distributed under the MIT License.
-See LICENSE for more details.
-
-
----
 
 🙌 Acknowledgements
 
